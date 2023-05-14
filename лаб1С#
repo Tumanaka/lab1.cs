@@ -1,0 +1,197 @@
+using System;
+
+namespace MinefieldGame
+{
+    class Program
+    {
+
+        public static void ShowField(char[,] field, int[] playerPos, int size)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    Console.Write(field[i, j] + " ");
+                }
+                Console.WriteLine();
+            }
+        }
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Welcome to Minefield Game!");
+
+            // Запитуємо користувача про розмір поля та кількість життів
+            string line;
+
+            Console.WriteLine("Enter the size of the field (N x N): ");
+            int size;
+            do
+            {
+                line = Console.ReadLine();
+                if (int.TryParse(line, out size))
+                {
+
+                    size = int.Parse(line);
+                    if (size < 3)
+                        Console.WriteLine("The field is too small.Try again: ");
+                }
+
+                else Console.WriteLine("Incorrect field value. Try again:");
+            }
+            while (!(int.TryParse(line, out size)) || size < 3);
+            Console.Write("Enter the number of lives: ");
+            int maxlives;
+
+
+            do
+            {
+                line = Console.ReadLine();
+                if (int.TryParse(line, out maxlives))
+                {
+                    maxlives = int.Parse(line);
+                    if (maxlives < 1)
+                        Console.WriteLine("Incorrect value.Try again: ");
+                }
+
+
+
+                else Console.WriteLine("Incorrect lives value. Try again:");
+            }
+            while (!(int.TryParse(line, out maxlives)) || maxlives < 1);
+            int lives = maxlives;
+
+            // Обчислюємо кількість мін та аптечок
+            int numMines = size * size / 4;
+            int numMedkits = numMines;
+            int[] playerPos = { 0, 0 };
+
+            // Ініціалізуємо гру
+
+            char[,] field = InitializeField(size, numMines, numMedkits);
+
+            while (true)
+            {
+                // Показуємо поле гравцю
+                ShowField(field, playerPos, size);
+                Console.WriteLine("playerPosition: {0}, {1} ", playerPos[0], playerPos[1]);
+
+                // Показуємо кількість життів
+                Console.WriteLine("Lives: {0}", lives);
+
+                // Перевіряємо, чи гравець перемістився на міну або аптечку
+                if (field[playerPos[0], playerPos[1]] == 'X')
+                {
+                    lives--;
+
+                    Console.WriteLine("You stepped on a mine!");
+                    Console.WriteLine("Lives: {0}", lives);
+
+                }
+                else if (field[playerPos[0], playerPos[1]] == '+')
+                {
+
+                    Console.WriteLine("You found a medkit!");
+                    if (lives < maxlives)
+                    {
+                        lives++;
+                        Console.WriteLine("Lives: {0}", lives);
+                    }
+                }
+
+                // Перевіряємо, чи гравець виграв або програв
+                if (playerPos[0] == size - 1 && playerPos[1] == size - 1)
+                {
+                    Console.WriteLine("Congratulations! You won!");
+                    break;
+                }
+                else if (lives <= 0)
+                {
+                    Console.WriteLine("Game over. You lost.");
+                    break;
+                }
+
+                // Запитуємо гравця про напрямок руху
+                Console.Write("Enter direction (up/down/left/right): ");
+                string direction = Console.ReadLine().ToLower();
+
+                // Переміщуємо гравця
+                switch (direction)
+                {
+                    case "up":
+                        if (playerPos[0] > 0) playerPos[0]--;
+                        else Console.WriteLine("Invalid direction.");
+                        break;
+                    case "down":
+                        if (playerPos[0] < size - 1) playerPos[0]++;
+                        else Console.WriteLine("Invalid direction.");
+                        break;
+                    case "left":
+                        if (playerPos[1] > 0) playerPos[1]--;
+                        else Console.WriteLine("Invalid direction.");
+                        break;
+                    case "right":
+                        if (playerPos[1] < size - 1) playerPos[1]++;
+                        else Console.WriteLine("Invalid direction.");
+                        break;
+                    default:
+                        Console.WriteLine("Invalid direction.");
+                        break;
+
+                }
+            }
+        }
+
+        // Функція для ініціалізації поля з мінами та аптечками
+        public static char[,] InitializeField(int size, int numMines, int numMedkits)
+        {
+            char[,] field = new char[size, size];
+            Random rnd = new Random();
+            int maxItems = size * size / 2; // максимальна кількість мін та аптечок
+            int mines = 0;
+            int medkits = 0;
+
+            field[0, 0] = 'P';
+            field[size - 1, size - 1] = 'F';
+            do
+            {
+                int i = rnd.Next(0, size);
+                int j = rnd.Next(0, size);
+                if (field[i, j] != 'X' && field[i, j] != 'F' && field[i, j] != 'P')
+                {
+                    field[i, j] = 'X';
+                    mines++;
+                }
+            } while (numMines >= mines);
+
+
+            do
+            {
+                int i = rnd.Next(0, size);
+                int j = rnd.Next(0, size);
+                if (field[i, j] != '+' && field[i, j] != 'F' && field[i, j] != 'P')
+                {
+                    field[i, j] = '+';
+                    medkits++;
+                }
+            } while (numMedkits >= medkits);
+
+
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    if (field[i, j] != 'X' && field[i, j] != '+' && field[i, j] != 'F' && field[i, j] != 'P')
+                        field[i, j] = '0';
+                }
+            }
+
+
+
+
+            return field;
+        }
+    }
+}
+
+
+
